@@ -1,0 +1,36 @@
+@startuml VigilantSpoonArchitecture
+left to right direction
+
+' === Nível 1: Contexto ===
+rectangle "Vigilant Spoon System" as system {
+  rectangle "API Validation" as api
+  rectangle "Database" as db
+  rectangle "Client Applications" as clients
+
+  api --> db : "Armazena/Consulta dados"
+  clients --> api : "Consome serviços"
+}
+
+' === Nível 2: Containers ===
+rectangle api {
+  rectangle "Biometry Controller" as biometry
+  rectangle "Document Controller" as document
+  rectangle "Notification Service" as notification
+  rectangle "Data Repositories" as repos
+
+  biometry --> repos : "Acessa"
+  document --> repos : "Acessa"
+  biometry --> notification : "Chama"
+  document --> notification : "Chama"
+  repos --> db : "Persiste dados"
+}
+
+' === Legenda e Notas ===
+note right of api
+  **Tecnologias:**
+  - .NET Core 6+
+  - PostgreSQL
+  - Docker
+end note
+
+@enduml

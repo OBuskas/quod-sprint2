@@ -1,0 +1,225 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de Validação Biométrica e Documentos",
+    "version": "1.0.0",
+    "description": "Esta API permite fazer upload de imagens de biometria (digital ou facial) e documentos (RG, CPF, CNH, Passaporte, Carteira de Trabalho), realizar validações básicas e avançadas e notificar o sistema de monitoramento de fraudes quando necessário."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Servidor local de desenvolvimento"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "UploadResponse": {
+        "type": "object",
+        "properties": {
+          "uploadId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e2a8d6f4-1b2c-4567-a8b9-cdef01234567"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status da análise",
+            "enum": [
+              "PendingReview",
+              "NoFraudDetected",
+              "FraudSuspected"
+            ],
+            "example": "PendingReview"
+          }
+        },
+        "required": [
+          "uploadId",
+          "status"
+        ]
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "RFC 7807 – Problem Details para HTTP APIs",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+          },
+          "title": {
+            "type": "string",
+            "example": "One or more validation errors occurred."
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 400
+          },
+          "traceId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e2a8d6f4-1b2c-4567-a8b9-cdef01234567"
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "traceId",
+          "errors"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/api/biometry/upload": {
+      "post": {
+        "tags": [
+          "Biometry"
+        ],
+        "summary": "Upload de imagem de biometria digital ou facial",
+        "operationId": "uploadBiometry",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "type"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem JPG ou PNG para análise biométrica"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Tipo de biometria",
+                    "enum": [
+                      "digital",
+                      "facial"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload recebido e pendente de revisão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erros de validação nos dados de upload",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/document/upload": {
+      "post": {
+        "tags": [
+          "Document"
+        ],
+        "summary": "Upload de imagem de documento para validação",
+        "operationId": "uploadDocument",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "docType"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagem JPG ou PNG do documento"
+                  },
+                  "docType": {
+                    "type": "string",
+                    "description": "Tipo de documento",
+                    "enum": [
+                      "RG",
+                      "CPF",
+                      "CNH",
+                      "Passaporte",
+                      "Carteira de Trabalho"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload recebido e pendente de revisão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erros de validação nos dados de upload",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
