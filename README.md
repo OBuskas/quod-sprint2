@@ -1,7 +1,5 @@
 # Quod Sprint2 - Sistema de Validação de Documentos e Biometria
 
-![Diagrama de Arquitetura](./diagrama.wsd)
-
 Solução completa para validação de documentos e verificação biométrica com detecção de fraudes.
 
 ## 🚀 Funcionalidades Principais
